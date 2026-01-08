@@ -310,64 +310,6 @@ const commands = [
         description: 'Show all available commands'
     },
     {
-        name: 'addtip',
-        description: 'Add a new game tip (Admin/Mod only)',
-        options: [
-            {
-                name: 'category',
-                description: 'Tip category',
-                type: 3,
-                required: true,
-                choices: [
-                    { name: '📅 Event Guides', value: 'event' },
-                    { name: '🎒 Item Guides', value: 'item' },
-                    { name: '🌟 Beginner Guides', value: 'beginner' }
-                ]
-            },
-            { name: 'tip', description: 'The tip to add', type: 3, required: true }
-        ],
-        default_member_permissions: PermissionFlagsBits.ManageMessages.toString()
-    },
-    {
-        name: 'edittip',
-        description: 'Edit an existing tip (Admin/Mod only)',
-        options: [
-            {
-                name: 'category',
-                description: 'Tip category',
-                type: 3,
-                required: true,
-                choices: [
-                    { name: '📅 Event Guides', value: 'event' },
-                    { name: '🎒 Item Guides', value: 'item' },
-                    { name: '🌟 Beginner Guides', value: 'beginner' }
-                ]
-            },
-            { name: 'number', description: 'Tip number to edit (use /tips to see numbers)', type: 4, required: true },
-            { name: 'newtip', description: 'The new tip text', type: 3, required: true }
-        ],
-        default_member_permissions: PermissionFlagsBits.ManageMessages.toString()
-    },
-    {
-        name: 'removetip',
-        description: 'Remove a tip (Admin/Mod only)',
-        options: [
-            {
-                name: 'category',
-                description: 'Tip category',
-                type: 3,
-                required: true,
-                choices: [
-                    { name: '📅 Event Guides', value: 'event' },
-                    { name: '🎒 Item Guides', value: 'item' },
-                    { name: '🌟 Beginner Guides', value: 'beginner' }
-                ]
-            },
-            { name: 'number', description: 'Tip number to remove (use /tips to see numbers)', type: 4, required: true }
-        ],
-        default_member_permissions: PermissionFlagsBits.ManageMessages.toString()
-    },
-    {
         name: 'gameinfo',
         description: 'Show Top Heroes game information and useful links'
     },
@@ -646,9 +588,6 @@ client.on('interactionCreate', async (interaction) => {
             case 'translate': await handleTranslate(interaction, options.getString('text'), options.getString('to')); break;
             case 'languages': await handleLanguages(interaction); break;
             case 'help': await handleHelp(interaction); break;
-            case 'addtip': await handleAddTip(interaction, options.getString('category'), options.getString('tip')); break;
-            case 'edittip': await handleEditTip(interaction, options.getString('category'), options.getInteger('number'), options.getString('newtip')); break;
-            case 'removetip': await handleRemoveTip(interaction, options.getString('category'), options.getInteger('number')); break;
             case 'gameinfo': await handleGameInfo(interaction); break;
             case 'redeem': await handleRedeem(interaction); break;
             case 'setrank': await handleSetRank(interaction, options.getUser('member'), options.getString('rank')); break;
@@ -700,162 +639,10 @@ async function handleSetup(interaction) {
             createdRoles[roleData.name] = role;
         }
 
-        const guildMasterRole = createdRoles['Guild Master'] || guild.roles.cache.find(r => r.name === 'Guild Master');
-        const r4Role = createdRoles['R4'] || guild.roles.cache.find(r => r.name === 'R4');
-        const memberRole = createdRoles['Member'] || guild.roles.cache.find(r => r.name === 'Member');
-        const everyoneRole = guild.roles.everyone;
+        // Note: Channel/category creation removed - manage Discord structure manually
+        // This command now only creates roles if they don't exist
 
-        // ============================================
-        // CREATE: Standard channel structure
-        // ============================================
-        const categories = [
-            {
-                name: '🔒 ADMIN',
-                permissions: 'admin',
-                channels: [
-                    { name: '💼admin-chat', type: ChannelType.GuildText },
-                    { name: '📝applications', type: ChannelType.GuildText }
-                ]
-            },
-            {
-                name: '🏰 WELCOME',
-                permissions: 'public',
-                channels: [
-                    { name: '👋welcome', type: ChannelType.GuildText, readonly: true }
-                ]
-            },
-            {
-                name: '💬 COMMUNITY',
-                permissions: 'members',
-                channels: [
-                    { name: '💬general-chat', type: ChannelType.GuildText },
-                    { name: '🌐translations', type: ChannelType.GuildText },
-                    { name: '❓help', type: ChannelType.GuildText },
-                    { name: '📷screenshots', type: ChannelType.GuildText }
-                ]
-            },
-            {
-                name: '🔊 VOICE',
-                permissions: 'members',
-                channels: [
-                    { name: '🎮 Gaming', type: ChannelType.GuildVoice },
-                    { name: '💬 Hangout', type: ChannelType.GuildVoice }
-                ]
-            },
-            {
-                name: '💡 TIPS & TRICKS',
-                permissions: 'tips',
-                channels: [
-                    { name: '🎁game-codes', type: ChannelType.GuildText },
-                    { name: '🎒item-guides', type: ChannelType.GuildText },
-                    { name: '🌟beginner-guides', type: ChannelType.GuildText }
-                ]
-            }
-        ];
-
-        for (const category of categories) {
-            let categoryPerms = [];
-            if (category.permissions === 'public') {
-                categoryPerms = [
-                    { id: everyoneRole.id, allow: [PermissionFlagsBits.ViewChannel] }
-                ];
-            } else if (category.permissions === 'members') {
-                categoryPerms = [
-                    { id: everyoneRole.id, deny: [PermissionFlagsBits.ViewChannel] },
-                    { id: memberRole.id, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages] },
-                    { id: r4Role.id, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages] },
-                    { id: guildMasterRole.id, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages] }
-                ];
-            } else if (category.permissions === 'admin') {
-                categoryPerms = [
-                    { id: everyoneRole.id, deny: [PermissionFlagsBits.ViewChannel] },
-                    { id: r4Role.id, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages] },
-                    { id: guildMasterRole.id, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages] }
-                ];
-            } else if (category.permissions === 'tips') {
-                // Members can view only, R4 and Guild Master can view and send
-                categoryPerms = [
-                    { id: everyoneRole.id, deny: [PermissionFlagsBits.ViewChannel] },
-                    { id: memberRole.id, allow: [PermissionFlagsBits.ViewChannel], deny: [PermissionFlagsBits.SendMessages] },
-                    { id: r4Role.id, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages] },
-                    { id: guildMasterRole.id, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages] }
-                ];
-            }
-
-            let categoryChannel = guild.channels.cache.find(
-                c => c.name === category.name && c.type === ChannelType.GuildCategory
-            );
-
-            if (!categoryChannel) {
-                categoryChannel = await guild.channels.create({
-                    name: category.name,
-                    type: ChannelType.GuildCategory,
-                    permissionOverwrites: categoryPerms
-                });
-            } else {
-                await categoryChannel.permissionOverwrites.set(categoryPerms);
-            }
-
-            for (const channel of category.channels) {
-                let existingChannel = guild.channels.cache.find(c => c.name === channel.name);
-
-                let channelPerms = [];
-                if (channel.readonly && category.permissions === 'public') {
-                    channelPerms = [
-                        { id: everyoneRole.id, allow: [PermissionFlagsBits.ViewChannel], deny: [PermissionFlagsBits.SendMessages] }
-                    ];
-                } else if (channel.readonly) {
-                    channelPerms = [
-                        { id: everyoneRole.id, deny: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages] },
-                        { id: memberRole.id, allow: [PermissionFlagsBits.ViewChannel], deny: [PermissionFlagsBits.SendMessages] },
-                        { id: r4Role.id, allow: [PermissionFlagsBits.ViewChannel], deny: [PermissionFlagsBits.SendMessages] },
-                        { id: guildMasterRole.id, allow: [PermissionFlagsBits.ViewChannel], deny: [PermissionFlagsBits.SendMessages] }
-                    ];
-                }
-
-                if (!existingChannel) {
-                    await guild.channels.create({
-                        name: channel.name,
-                        type: channel.type,
-                        parent: categoryChannel.id,
-                        permissionOverwrites: channelPerms.length > 0 ? channelPerms : undefined
-                    });
-                } else {
-                    if (channelPerms.length > 0) {
-                        await existingChannel.permissionOverwrites.set(channelPerms);
-                    }
-                    if (existingChannel.parentId !== categoryChannel.id) {
-                        await existingChannel.setParent(categoryChannel.id);
-                    }
-                }
-            }
-        }
-
-        // Post guides in respective channels
-        const translationsChannel = guild.channels.cache.find(
-            ch => ch.name === '🌐translations' || ch.name === 'translations'
-        );
-        if (translationsChannel) {
-            await postTranslationGuide(translationsChannel);
-        }
-
-        // Post member commands guide in help channel
-        const helpChannel = guild.channels.cache.find(
-            ch => ch.name === '❓help' || ch.name === 'help'
-        );
-        if (helpChannel) {
-            await postMemberCommandsGuide(helpChannel);
-        }
-
-        // Post admin commands guide in admin-chat channel
-        const adminChatChannel = guild.channels.cache.find(
-            ch => ch.name === '💼admin-chat' || ch.name === 'admin-chat'
-        );
-        if (adminChatChannel) {
-            await postAdminCommandsGuide(adminChatChannel);
-        }
-
-        await interaction.editReply('✅ Server setup complete!\n\n**Cleaned up:** Removed undefined categories (INFORMATION, etc.), duplicate channels, and mod-log.\n\n**Categories:** ADMIN → WELCOME → COMMUNITY → VOICE → TIPS & TRICKS\n\n**Next step:** Run `/welcome` in the #👋welcome channel.\n\n**Guides posted:**\n• Translation guide → #🌐translations\n• Member commands → #❓help\n• Admin commands → #💼admin-chat');
+        await interaction.editReply('✅ Server setup complete!\n\n**Roles created/verified:**\n• Guild Master (Admin)\n• R4 (Officer)\n• Member\n• Applicant\n\n**Note:** Channels and categories are managed manually in Discord.\nUse `/welcome` to post the welcome message in your welcome channel.');
     } catch (error) {
         console.error('Setup error:', error);
         await interaction.editReply('❌ Error during setup: ' + error.message);
@@ -995,8 +782,7 @@ async function postAdminCommandsGuide(channel) {
         .setColor('#00ff00')
         .setTitle('📝 Content Management')
         .addFields(
-            { name: '`/addcode <code> <description> [expiry]`', value: 'Add a new game code (posts to #🎁game-codes with @everyone ping)', inline: false },
-            { name: '`/addtip <category> <tip>`', value: 'Add a new tip to Event/Item/Beginner guides', inline: false }
+            { name: '`/addcode <code> <description> [expiry]`', value: 'Add a new game code (posts to #🎁game-codes with @everyone ping)', inline: false }
         );
 
     const embed4 = new EmbedBuilder()
@@ -1485,114 +1271,6 @@ async function handleHelp(interaction) {
         .setTimestamp();
 
     await interaction.reply({ embeds: [embed] });
-}
-
-async function handleAddTip(interaction, category, tip) {
-    // Migrate old array format to new object format if needed
-    if (Array.isArray(db.tips)) {
-        db.tips = {
-            event: [],
-            item: [],
-            beginner: db.tips
-        };
-    }
-
-    const categoryEmojis = {
-        event: '📅',
-        item: '🎒',
-        beginner: '🌟'
-    };
-
-    const categoryNames = {
-        event: 'Event Guides',
-        item: 'Item Guides',
-        beginner: 'Beginner Guides'
-    };
-
-    const categoryChannels = {
-        event: '📅event-guides',
-        item: '🎒item-guides',
-        beginner: '🌟beginner-guides'
-    };
-
-    if (!db.tips[category]) {
-        db.tips[category] = [];
-    }
-
-    const formattedTip = `${categoryEmojis[category]} ${tip}`;
-    db.tips[category].push(formattedTip);
-    saveDatabase(db);
-
-    // Post to the respective guide channel
-    const channelName = categoryChannels[category];
-    const guideChannel = interaction.guild.channels.cache.find(
-        ch => ch.name === channelName || ch.name === channelName.replace(/^./, '') // Try with and without emoji
-    );
-
-    if (guideChannel) {
-        const tipEmbed = new EmbedBuilder()
-            .setColor(category === 'event' ? '#FF6B6B' : category === 'item' ? '#4ECDC4' : '#FFE66D')
-            .setTitle(`${categoryEmojis[category]} New ${categoryNames[category]} Tip`)
-            .setDescription(formattedTip)
-            .setFooter({ text: `Added by ${interaction.user.tag} • Tip #${db.tips[category].length}` })
-            .setTimestamp();
-
-        await guideChannel.send({ embeds: [tipEmbed] });
-    }
-
-    await interaction.reply({
-        content: `✅ Tip added to **${categoryNames[category]}**!${guideChannel ? `\n📢 Posted to <#${guideChannel.id}>` : '\n⚠️ Guide channel not found - tip saved but not posted.'}\n\nTotal tips in category: ${db.tips[category].length}`,
-        ephemeral: true
-    });
-}
-
-async function handleEditTip(interaction, category, tipNumber, newTip) {
-    const categoryEmojis = { event: '📅', item: '🎒', beginner: '🌟' };
-    const categoryNames = { event: 'Event Guides', item: 'Item Guides', beginner: 'Beginner Guides' };
-
-    if (!db.tips[category] || db.tips[category].length === 0) {
-        await interaction.reply({ content: `❌ No tips found in ${categoryNames[category]}!`, ephemeral: true });
-        return;
-    }
-
-    const index = tipNumber - 1;
-    if (index < 0 || index >= db.tips[category].length) {
-        await interaction.reply({ content: `❌ Invalid tip number! Category has ${db.tips[category].length} tips (1-${db.tips[category].length}).`, ephemeral: true });
-        return;
-    }
-
-    const oldTip = db.tips[category][index];
-    const formattedTip = `${categoryEmojis[category]} ${newTip}`;
-    db.tips[category][index] = formattedTip;
-    saveDatabase(db);
-
-    await interaction.reply({
-        content: `✅ Tip #${tipNumber} in **${categoryNames[category]}** updated!\n\n**Old:** ${oldTip}\n**New:** ${formattedTip}`,
-        ephemeral: true
-    });
-}
-
-async function handleRemoveTip(interaction, category, tipNumber) {
-    const categoryNames = { event: 'Event Guides', item: 'Item Guides', beginner: 'Beginner Guides' };
-
-    if (!db.tips[category] || db.tips[category].length === 0) {
-        await interaction.reply({ content: `❌ No tips found in ${categoryNames[category]}!`, ephemeral: true });
-        return;
-    }
-
-    const index = tipNumber - 1;
-    if (index < 0 || index >= db.tips[category].length) {
-        await interaction.reply({ content: `❌ Invalid tip number! Category has ${db.tips[category].length} tips (1-${db.tips[category].length}).`, ephemeral: true });
-        return;
-    }
-
-    const removedTip = db.tips[category].splice(index, 1)[0];
-    saveDatabase(db);
-
-    await interaction.reply({
-        content: `✅ Tip #${tipNumber} removed from **${categoryNames[category]}**!\n\n**Removed:** ${removedTip}\n\nRemaining tips: ${db.tips[category].length}`,
-        ephemeral: true
-    });
 }
 
 async function handleGameInfo(interaction) {

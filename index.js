@@ -1945,13 +1945,16 @@ async function handleModalSubmit(interaction) {
         });
         saveDatabase(db);
 
-        // Give Applicant role
+        // Give Applicant role and set nickname to IGN
         try {
             const member = await interaction.guild.members.fetch(interaction.user.id);
             const applicantRole = interaction.guild.roles.cache.find(r => r.name === 'Applicant');
             if (applicantRole) await member.roles.add(applicantRole);
+
+            // Auto-set nickname to IGN
+            await member.setNickname(ign);
         } catch (e) {
-            console.log('Could not assign Applicant role:', e.message);
+            console.log('Could not assign Applicant role or set nickname:', e.message);
         }
 
         // Send to admin applications channel

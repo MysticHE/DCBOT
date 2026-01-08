@@ -220,8 +220,23 @@ const BRIDGE_CHANNELS = {
         { code: 'ja', label: '日本語 🇯🇵', color: 0xBC002D, names: ['japanese-chat', '日本語-chat', '🇯🇵japanese-chat'] },
         { code: 'zh-CN', label: '中文 🇨🇳', color: 0xDE2910, names: ['chinese-chat', '中文-chat', '🇨🇳chinese-chat'] },
         { code: 'th', label: 'ไทย 🇹🇭', color: 0x2D2A4A, names: ['thai-chat', 'ไทย-chat', '🇹🇭thai-chat'] },
-        { code: 'ru', label: 'Русский 🇷🇺', color: 0x0039A6, names: ['russian-chat', 'русский-chat', '🇷🇺russian-chat'] }
+        { code: 'ru', label: 'Русский 🇷🇺', color: 0x0039A6, names: ['russian-chat', 'русский-chat', '🇷🇺russian-chat'] },
+        { code: 'uk', label: 'Українська 🇺🇦', color: 0x005BBB, names: ['ukrainian-chat', 'українська-chat', '🇺🇦ukrainian-chat'] },
+        { code: 'id', label: 'Indonesia 🇮🇩', color: 0xFF0000, names: ['indonesian-chat', 'indonesia-chat', '🇮🇩indonesian-chat'] }
     ]
+};
+
+// Language roles for channel access control
+const LANGUAGE_ROLES = {
+    'en': { name: 'Lang-English', color: '#3C3B6E', channelNames: [] },
+    'vi': { name: 'Lang-Vietnamese', color: '#DA251D', channelNames: ['vietnamese-chat'] },
+    'ko': { name: 'Lang-Korean', color: '#003478', channelNames: ['korean-chat'] },
+    'ja': { name: 'Lang-Japanese', color: '#BC002D', channelNames: ['japanese-chat'] },
+    'zh-CN': { name: 'Lang-Chinese', color: '#DE2910', channelNames: ['chinese-chat'] },
+    'th': { name: 'Lang-Thai', color: '#2D2A4A', channelNames: ['thai-chat'] },
+    'ru': { name: 'Lang-Russian', color: '#0039A6', channelNames: ['russian-chat'] },
+    'uk': { name: 'Lang-Ukrainian', color: '#005BBB', channelNames: ['ukrainian-chat'] },
+    'id': { name: 'Lang-Indonesian', color: '#FF0000', channelNames: ['indonesian-chat'] }
 };
 
 // ============================================
@@ -352,6 +367,34 @@ const commands = [
     {
         name: 'translationguide',
         description: 'Post the translation guide with all supported languages (Admin only)',
+        default_member_permissions: PermissionFlagsBits.Administrator.toString()
+    },
+    {
+        name: 'setlanguage',
+        description: 'Change your preferred language channel',
+        options: [
+            {
+                name: 'language',
+                description: 'Your preferred language',
+                type: 3,
+                required: true,
+                choices: [
+                    { name: 'English (general-chat only)', value: 'en' },
+                    { name: 'Vietnamese', value: 'vi' },
+                    { name: 'Korean', value: 'ko' },
+                    { name: 'Japanese', value: 'ja' },
+                    { name: 'Chinese', value: 'zh-CN' },
+                    { name: 'Thai', value: 'th' },
+                    { name: 'Russian', value: 'ru' },
+                    { name: 'Ukrainian', value: 'uk' },
+                    { name: 'Indonesian', value: 'id' }
+                ]
+            }
+        ]
+    },
+    {
+        name: 'setup-language-channels',
+        description: 'Configure language channel permissions (Admin only)',
         default_member_permissions: PermissionFlagsBits.Administrator.toString()
     },
 ];
@@ -674,6 +717,8 @@ client.on('interactionCreate', async (interaction) => {
             case 'redeem': await handleRedeem(interaction); break;
             case 'setrank': await handleSetRank(interaction, options.getUser('member'), options.getString('rank')); break;
             case 'translationguide': await handleTranslationGuide(interaction); break;
+            case 'setlanguage': await handleSetLanguage(interaction, options.getString('language')); break;
+            case 'setup-language-channels': await handleSetupLanguageChannels(interaction); break;
         }
     } catch (error) {
         console.error('Command error:', error);
@@ -721,10 +766,26 @@ async function handleSetup(interaction) {
             createdRoles[roleData.name] = role;
         }
 
-        // Note: Channel/category creation removed - manage Discord structure manually
-        // This command now only creates roles if they don't exist
+        // Create language roles for channel access
+        const langRolesCreated = [];
+        for (const [langCode, langConfig] of Object.entries(LANGUAGE_ROLES)) {
+            let role = guild.roles.cache.find(r => r.name === langConfig.name);
+            if (!role) {
+                role = await guild.roles.create({
+                    name: langConfig.name,
+                    color: langConfig.color,
+                    hoist: false,
+                    permissions: []
+                });
+                langRolesCreated.push(langConfig.name);
+            }
+        }
 
-        await interaction.editReply('✅ Server setup complete!\n\n**Roles created/verified:**\n• Guild Master (Admin)\n• R4 (Officer)\n• Member\n• Applicant\n\n**Note:** Channels and categories are managed manually in Discord.\nUse `/welcome` to post the welcome message in your welcome channel.');
+        const langRolesMsg = langRolesCreated.length > 0
+            ? `\n\n**Language roles created:**\n${langRolesCreated.map(r => `• ${r}`).join('\n')}`
+            : '\n\n**Language roles:** Already exist';
+
+        await interaction.editReply(`✅ Server setup complete!\n\n**Roles created/verified:**\n• Guild Master (Admin)\n• R4 (Officer)\n• Member\n• Applicant${langRolesMsg}\n\n**Next steps:**\n1. Run \`/setup-language-channels\` to configure channel permissions\n2. Use \`/welcome\` to post the welcome message`);
     } catch (error) {
         console.error('Setup error:', error);
         await interaction.editReply('❌ Error during setup: ' + error.message);
@@ -1477,6 +1538,144 @@ async function handleSetRank(interaction, targetUser, rank) {
     }
 }
 
+async function handleSetLanguage(interaction, newLanguage) {
+    const member = await interaction.guild.members.fetch(interaction.user.id);
+
+    // Check if user is a guild member (has Member, R4, or Guild Master role)
+    const hasGuildRole = member.roles.cache.some(r =>
+        r.name === 'Member' || r.name === 'R4' || r.name === 'Guild Master'
+    );
+
+    if (!hasGuildRole) {
+        await interaction.reply({
+            content: '❌ You must be a guild member to change your language preference.',
+            ephemeral: true
+        });
+        return;
+    }
+
+    // Remove all existing language roles
+    const existingLangRoles = member.roles.cache.filter(r => r.name.startsWith('Lang-'));
+    for (const role of existingLangRoles.values()) {
+        await member.roles.remove(role);
+    }
+
+    // Add new language role
+    const langRoleConfig = LANGUAGE_ROLES[newLanguage];
+    let assignedRole = null;
+    if (langRoleConfig) {
+        const newLangRole = interaction.guild.roles.cache.find(r => r.name === langRoleConfig.name);
+        if (newLangRole) {
+            await member.roles.add(newLangRole);
+            assignedRole = langRoleConfig.name;
+        }
+    }
+
+    // Update database
+    if (db.members[interaction.user.id]) {
+        db.members[interaction.user.id].preferredLanguage = newLanguage;
+        saveDatabase(db);
+    }
+
+    const langName = langRoleConfig ? langRoleConfig.name.replace('Lang-', '') : 'English';
+    const channelAccess = newLanguage === 'en'
+        ? 'general-chat only'
+        : `general-chat + ${langRoleConfig.channelNames[0]}`;
+
+    const embed = new EmbedBuilder()
+        .setColor('#00ff00')
+        .setTitle('🌐 Language Changed!')
+        .setDescription(`Your language preference has been changed to **${langName}**!`)
+        .addFields(
+            { name: '📺 Channel Access', value: channelAccess, inline: false }
+        )
+        .setFooter({ text: 'TopHeroes Guild Bot' })
+        .setTimestamp();
+
+    await interaction.reply({ embeds: [embed], ephemeral: true });
+}
+
+async function handleSetupLanguageChannels(interaction) {
+    await interaction.deferReply({ ephemeral: true });
+    const guild = interaction.guild;
+
+    try {
+        const results = [];
+
+        // Configure each language channel
+        for (const lang of BRIDGE_CHANNELS.languages) {
+            const langRoleConfig = LANGUAGE_ROLES[lang.code];
+            if (!langRoleConfig) continue;
+
+            // Find the language role
+            const langRole = guild.roles.cache.find(r => r.name === langRoleConfig.name);
+            if (!langRole) {
+                results.push(`⚠️ ${lang.label}: Role not found (run /setup first)`);
+                continue;
+            }
+
+            // Find the language channel
+            let channel = null;
+            for (const channelName of lang.names) {
+                channel = guild.channels.cache.find(ch =>
+                    ch.name.toLowerCase().includes(channelName.toLowerCase()) && ch.type === ChannelType.GuildText
+                );
+                if (channel) break;
+            }
+
+            if (!channel) {
+                results.push(`⚠️ ${lang.label}: Channel not found`);
+                continue;
+            }
+
+            // Set permissions: deny @everyone, allow language role
+            await channel.permissionOverwrites.edit(guild.roles.everyone, {
+                ViewChannel: false
+            });
+
+            await channel.permissionOverwrites.edit(langRole, {
+                ViewChannel: true,
+                SendMessages: true
+            });
+
+            results.push(`✅ ${lang.label}: #${channel.name} configured`);
+        }
+
+        // Ensure general-chat is visible to all language roles
+        const generalChannel = guild.channels.cache.find(ch =>
+            (ch.name.includes('general-chat') || ch.name === 'general') && ch.type === ChannelType.GuildText
+        );
+
+        if (generalChannel) {
+            for (const [langCode, langConfig] of Object.entries(LANGUAGE_ROLES)) {
+                const langRole = guild.roles.cache.find(r => r.name === langConfig.name);
+                if (langRole) {
+                    await generalChannel.permissionOverwrites.edit(langRole, {
+                        ViewChannel: true,
+                        SendMessages: true
+                    });
+                }
+            }
+            results.push(`✅ General chat: All language roles can access`);
+        }
+
+        const embed = new EmbedBuilder()
+            .setColor('#00ff00')
+            .setTitle('🌐 Language Channel Setup Complete')
+            .setDescription(results.join('\n'))
+            .addFields({
+                name: '📋 Next Steps',
+                value: '• New applicants will select their language during application\n• Existing members can use `/setlanguage` to set their preference\n• Admins can manually assign `Lang-*` roles to existing members'
+            })
+            .setTimestamp();
+
+        await interaction.editReply({ embeds: [embed] });
+    } catch (error) {
+        console.error('Setup language channels error:', error);
+        await interaction.editReply({ content: `❌ Error: ${error.message}` });
+    }
+}
+
 // ============================================
 // INTERACTION HANDLERS
 // ============================================
@@ -1519,6 +1718,7 @@ async function handleButtonInteraction(interaction) {
                 'GuildMaster': 'Guild Master'
             };
 
+            const langPreference = app.preferredLanguage || 'en';
             db.members[app.discordId] = {
                 discordId: app.discordId,
                 discordName: app.discordName,
@@ -1527,11 +1727,13 @@ async function handleButtonInteraction(interaction) {
                 joinDate: new Date().toISOString(),
                 lastActive: new Date().toISOString(),
                 role: selectedRank,
+                preferredLanguage: langPreference,
                 notes: ''
             };
 
             let nicknameSet = true;
             let assignedRole = null;
+            let assignedLangRole = null;
             try {
                 const member = await interaction.guild.members.fetch(app.discordId);
 
@@ -1551,6 +1753,16 @@ async function handleButtonInteraction(interaction) {
                     assignedRole = roleName;
                 }
 
+                // Add the language role based on preference
+                const langRoleConfig = LANGUAGE_ROLES[langPreference];
+                if (langRoleConfig) {
+                    const langRole = interaction.guild.roles.cache.find(r => r.name === langRoleConfig.name);
+                    if (langRole) {
+                        await member.roles.add(langRole);
+                        assignedLangRole = langRoleConfig.name;
+                    }
+                }
+
                 // Remove Applicant role if exists
                 const applicantRole = interaction.guild.roles.cache.find(r => r.name === 'Applicant');
                 if (applicantRole && member.roles.cache.has(applicantRole.id)) {
@@ -1559,15 +1771,20 @@ async function handleButtonInteraction(interaction) {
 
                 // Send DM to approved user
                 try {
+                    const langChannelInfo = langPreference === 'en'
+                        ? 'general-chat only'
+                        : `general-chat + ${LANGUAGE_ROLES[langPreference].channelNames[0]}`;
+
                     const dmEmbed = new EmbedBuilder()
                         .setColor('#00ff00')
                         .setTitle('🎉 Welcome to TopHeroes Guild!')
-                        .setDescription(`Your application has been **approved**!\n\nYou now have access to all guild channels.`)
+                        .setDescription(`Your application has been **approved**!\n\nYou now have access to your language channels.`)
                         .addFields(
                             { name: '🎮 Your IGN', value: app.ign, inline: true },
                             { name: '🏅 Your Rank', value: assignedRole || 'Member', inline: true },
-                            { name: '👤 Your Nickname', value: nicknameSet ? `Set to: ${app.ign}` : '⚠️ Please set manually (see below)', inline: true },
-                            { name: '📋 Next Steps', value: '• Check out #💬general-chat to introduce yourself\n• Visit #🎁game-codes for free rewards\n• Check #🌟beginner-guides for tips' }
+                            { name: '🌐 Channel Access', value: langChannelInfo, inline: true },
+                            { name: '👤 Your Nickname', value: nicknameSet ? `Set to: ${app.ign}` : '⚠️ Please set manually (see below)', inline: false },
+                            { name: '📋 Next Steps', value: '• Check out #💬general-chat to introduce yourself\n• Visit #🎁game-codes for free rewards\n• Use `/setlanguage` to change your language channel' }
                         );
 
                     if (!nicknameSet) {
@@ -1711,24 +1928,75 @@ async function handleModalSubmit(interaction) {
             await appChannel.send({ embeds: [embed], components: [rankRow, buttonRow] });
         }
 
-        // Confirmation to user
+        // Send follow-up with language selection
+        const langSelectRow = new ActionRowBuilder().addComponents(
+            new StringSelectMenuBuilder()
+                .setCustomId(`lang_select_${appId}`)
+                .setPlaceholder('Select your preferred language')
+                .addOptions([
+                    { label: 'English (general-chat only)', value: 'en', emoji: '🇺🇸' },
+                    { label: 'Vietnamese', value: 'vi', emoji: '🇻🇳' },
+                    { label: 'Korean', value: 'ko', emoji: '🇰🇷' },
+                    { label: 'Japanese', value: 'ja', emoji: '🇯🇵' },
+                    { label: 'Chinese', value: 'zh-CN', emoji: '🇨🇳' },
+                    { label: 'Thai', value: 'th', emoji: '🇹🇭' },
+                    { label: 'Russian', value: 'ru', emoji: '🇷🇺' },
+                    { label: 'Ukrainian', value: 'uk', emoji: '🇺🇦' },
+                    { label: 'Indonesian', value: 'id', emoji: '🇮🇩' }
+                ])
+        );
+
+        // Confirmation to user with language selection
         const confirmEmbed = new EmbedBuilder()
-            .setColor('#00ff00')
-            .setTitle('✅ Application Submitted!')
-            .setDescription('Your application has been submitted successfully!')
+            .setColor('#FFA500')
+            .setTitle('📝 Application Submitted!')
+            .setDescription('Your application has been submitted! **One more step:**\n\nSelect your preferred language channel below.')
             .addFields(
                 { name: '🎮 IGN', value: ign, inline: true },
                 { name: '⏱️ Experience', value: experience, inline: true },
-                { name: '⏳ What\'s Next?', value: 'An admin will review your application. You\'ll receive a DM when it\'s processed.\n\nThis usually takes less than 24 hours.' }
+                { name: '🌐 Language Selection', value: 'Choose a language to get access to that language channel alongside general-chat.\n\nEnglish users will only see general-chat.' }
             )
             .setFooter({ text: 'TopHeroes Guild Bot' })
             .setTimestamp();
 
-        await interaction.reply({ embeds: [confirmEmbed], ephemeral: true });
+        await interaction.reply({ embeds: [confirmEmbed], components: [langSelectRow], ephemeral: true });
     }
 }
 
 async function handleSelectMenu(interaction) {
+    // Handle language selection during application
+    if (interaction.customId.startsWith('lang_select_')) {
+        const appId = interaction.customId.replace('lang_select_', '');
+        const selectedLang = interaction.values[0];
+
+        // Update application in database
+        const appIndex = db.applications.findIndex(a => a.id === parseInt(appId));
+        if (appIndex !== -1) {
+            db.applications[appIndex].preferredLanguage = selectedLang;
+            saveDatabase(db);
+        }
+
+        const langConfig = LANGUAGE_ROLES[selectedLang];
+        const langName = langConfig ? langConfig.name.replace('Lang-', '') : 'English';
+        const channelAccess = selectedLang === 'en'
+            ? 'general-chat only'
+            : `general-chat + ${langConfig.channelNames[0]}`;
+
+        const confirmEmbed = new EmbedBuilder()
+            .setColor('#00ff00')
+            .setTitle('✅ Application Complete!')
+            .setDescription(`Your language preference has been set to **${langName}**!`)
+            .addFields(
+                { name: '🌐 Channel Access', value: `You will have access to: **${channelAccess}**`, inline: false },
+                { name: '⏳ What\'s Next?', value: 'An admin will review your application. You\'ll receive a DM when it\'s processed.\n\nThis usually takes less than 24 hours.' }
+            )
+            .setFooter({ text: 'TopHeroes Guild Bot • Use /setlanguage to change later' })
+            .setTimestamp();
+
+        await interaction.update({ embeds: [confirmEmbed], components: [] });
+        return;
+    }
+
     // Handle application selection
     if (interaction.customId === 'application_action') {
         const appId = parseInt(interaction.values[0]);
@@ -1739,6 +2007,9 @@ async function handleSelectMenu(interaction) {
             return;
         }
 
+        const langConfig = app.preferredLanguage ? LANGUAGE_ROLES[app.preferredLanguage] : null;
+        const langDisplay = langConfig ? langConfig.name.replace('Lang-', '') : 'Not selected';
+
         const embed = new EmbedBuilder()
             .setColor('#FFA500')
             .setTitle(`📝 Application Review`)
@@ -1747,7 +2018,8 @@ async function handleSelectMenu(interaction) {
                 { name: '👤 Discord', value: `<@${app.discordId}>`, inline: true },
                 { name: '🎮 IGN', value: app.ign, inline: true },
                 { name: '⏱️ Experience', value: app.experience, inline: true },
-                { name: '📅 Applied', value: new Date(app.appliedAt).toLocaleString(), inline: true }
+                { name: '📅 Applied', value: new Date(app.appliedAt).toLocaleString(), inline: true },
+                { name: '🌐 Language', value: langDisplay, inline: true }
             )
             .setFooter({ text: 'Select a rank, then click Approve' });
 
@@ -1787,6 +2059,9 @@ async function handleSelectMenu(interaction) {
             'GuildMaster': 'Guild Master'
         };
 
+        const langConfig = app.preferredLanguage ? LANGUAGE_ROLES[app.preferredLanguage] : null;
+        const langDisplay = langConfig ? langConfig.name.replace('Lang-', '') : 'Not selected';
+
         const embed = new EmbedBuilder()
             .setColor('#FFA500')
             .setTitle(`📝 Application Review`)
@@ -1796,6 +2071,7 @@ async function handleSelectMenu(interaction) {
                 { name: '🎮 IGN', value: app.ign, inline: true },
                 { name: '⏱️ Experience', value: app.experience, inline: true },
                 { name: '📅 Applied', value: new Date(app.appliedAt).toLocaleString(), inline: true },
+                { name: '🌐 Language', value: langDisplay, inline: true },
                 { name: '🏅 Selected Rank', value: `**${rankNames[selectedRank]}**`, inline: true }
             )
             .setFooter({ text: `Will be approved as ${rankNames[selectedRank]}` });

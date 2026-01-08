@@ -1711,6 +1711,13 @@ async function handleAdminHelp(interaction) {
                 '`/addcode <code> <description> [expiry]` - Add new game code\n' +
                 '`/editcode <code> [description] [status]` - Edit existing code\n' +
                 '`/removecode <code>` - Remove a game code'
+            },
+            { name: '🌐 Language Roles', value:
+                'Manually assign `Lang-*` roles to members via Discord:\n' +
+                'Right-click member → Roles → Add language role\n' +
+                '• Lang-English, Lang-Vietnamese, Lang-Korean\n' +
+                '• Lang-Japanese, Lang-Chinese, Lang-Thai\n' +
+                '• Lang-Russian, Lang-Ukrainian, Lang-Indonesian'
             }
         );
 

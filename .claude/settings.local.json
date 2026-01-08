@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node --check:*)",
+      "Bash(taskkill:*)",
+      "Bash(node index.js:*)",
+      "Bash(tasklist:*)",
+      "Bash(findstr:*)",
+      "Bash(timeout /t 3 /nobreak)",
+      "Bash(dir /b \"C:\\\\Users\\\\huien\\\\topheroes-bot\")",
+      "Bash(powershell -Command \"Get-ChildItem ''C:\\\\Users\\\\huien\\\\topheroes-bot'' -Exclude node_modules | Select-Object -ExpandProperty Name\")",
+      "Bash(powershell -Command \"Stop-Process -Name node -Force\")",
+      "Bash(powershell -Command \"Get-Process node -ErrorAction SilentlyContinue | Stop-Process -Force; Start-Sleep -Seconds 2; Start-Process -FilePath ''node'' -ArgumentList ''index.js'' -WorkingDirectory ''C:\\\\Users\\\\huien\\\\topheroes-bot'' -WindowStyle Hidden\")",
+      "Bash(powershell -Command \"Get-ChildItem ''C:\\\\Users\\\\huien\\\\topheroes-bot\\\\commands'' -Recurse -Name\")",
+      "Bash(powershell:*)",
+      "Bash(dir \"C:\\\\Users\\\\huien\\\\topheroes-bot\\\\commands\" /s /b)",
+      "Bash(dir /s /b \"C:\\\\Users\\\\huien\\\\topheroes-bot\\\\commands\")",
+      "Bash(node -e:*)",
+      "Bash(git init:*)",
+      "Bash(git remote add:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git branch:*)",
+      "Bash(git push:*)",
+      "Bash(gh auth:*)",
+      "Bash(dir:*)",
+      "Bash(del Dockerfile)",
+      "Bash(del fly.toml)",
+      "Bash(git rm:*)",
+      "Bash(pm2 list:*)",
+      "Bash(pm2 stop:*)",
+      "Bash(pm2 delete:*)"
+    ]
+  }
+}

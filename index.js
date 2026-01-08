@@ -954,27 +954,27 @@ async function handleWelcomePost(interaction) {
         .addFields(
             {
                 name: '📋 How to Join',
-                value: '1️⃣ Click the **Apply to Join** button below\n2️⃣ Fill out the application form\n3️⃣ Wait for an admin to review your application\n4️⃣ Once approved, you\'ll gain access to all guild channels!',
+                value: '1️⃣ Click the **Apply to Join** button below\n2️⃣ Fill out the application form (IGN + Experience)\n3️⃣ **Select your preferred language** for chat\n4️⃣ Wait for an admin to review your application\n5️⃣ Once approved, you\'ll get access to your channels!',
+                inline: false
+            },
+            {
+                name: '🌐 Language Channels',
+                value: 'During application, choose your preferred language:\n• **English** - Access to #general-chat only\n• **Other languages** - Access to #general-chat + your language channel\n\n🇻🇳 Vietnamese • 🇰🇷 Korean • 🇯🇵 Japanese • 🇨🇳 Chinese\n🇹🇭 Thai • 🇷🇺 Russian • 🇺🇦 Ukrainian • 🇮🇩 Indonesian',
+                inline: false
+            },
+            {
+                name: '🔄 Auto-Translation',
+                value: '• Messages in #general-chat are **auto-translated** to all language channels\n• Messages in language channels are **auto-translated** to English in #general-chat\n• React with a flag emoji to translate any message!',
                 inline: false
             },
             {
                 name: '✨ What You Get as a Member',
-                value: '• Access to all guild chat channels\n• Free game codes & tips\n• Team finder for co-op play\n• Translation support (30+ languages)\n• Active community of players',
-                inline: false
-            },
-            {
-                name: '🎮 About the Game',
-                value: `**${GAME_INFO.name}**\nFantasy RPG strategy game - Build kingdoms, collect heroes, and conquer enemies!\n\n[Official Discord](${GAME_INFO.discord}) • [Website](${GAME_INFO.website})`,
+                value: '• Free game codes & tips in #game-codes\n• Team finder for co-op play\n• Use `/setlanguage` to change your language anytime\n• Active community of players worldwide',
                 inline: false
             },
             {
                 name: '📜 Guild Rules',
-                value: '• Be respectful to all members\n• No spam or self-promotion\n• Stay active - we check activity regularly\n• Help fellow guild members when possible\n• Have fun!',
-                inline: false
-            },
-            {
-                name: '🌐 Translation Support',
-                value: 'We support 30+ languages! React to any message with a flag emoji to translate it automatically.',
+                value: '• Be respectful to all members\n• No spam or self-promotion\n• Stay active - we check activity regularly\n• Help fellow guild members when possible',
                 inline: false
             }
         )
@@ -1391,23 +1391,28 @@ async function handleHelp(interaction) {
     const embed = new EmbedBuilder()
         .setColor('#0099ff')
         .setTitle('📚 TopHeroes Bot Commands')
-        .setDescription(`**Game:** ${GAME_INFO.name}\n\n*Click the Apply button in #welcome to join the guild!*`)
+        .setDescription(`**Game:** ${GAME_INFO.name}`)
         .addFields(
             { name: '📝 Getting Started', value:
-                '**New here?** Click the **Apply to Join** button in #👋welcome\n' +
-                'Once approved, you\'ll get access to all guild channels!'
+                '**New here?** Click **Apply to Join** in #welcome\n' +
+                '• Fill out IGN + Experience\n' +
+                '• Select your preferred language\n' +
+                '• Get access to #general-chat + your language channel!'
+            },
+            { name: '🌐 Language & Translation', value:
+                '`/setlanguage` - Change your language channel\n' +
+                '`/translate <text> <lang>` - Translate text manually\n' +
+                '`/languages` - Show all 30+ supported languages\n\n' +
+                '🔄 **Auto-Translation:**\n' +
+                '• #general-chat messages translate to all language channels\n' +
+                '• Language channel messages translate to #general-chat\n' +
+                '🚩 React with a flag emoji to translate any message!'
             },
             { name: '🎮 Game Commands', value:
                 '`/codes` - View active game codes\n' +
                 '`/allcodes` - View all known codes (active + expired)\n' +
                 '`/redeem` - How to redeem codes in-game\n' +
                 '`/gameinfo` - Game information and links'
-            },
-            { name: '🌐 Translation', value:
-                '🤖 **Auto-Translate:** Non-English messages are auto-translated to English!\n\n' +
-                '`/translate <text> <lang>` - Translate text manually\n' +
-                '`/languages` - Show all 30+ supported languages\n' +
-                '🚩 **Flag Reactions:** React with any flag emoji to translate to that language!'
             }
         )
         .setFooter({ text: 'TopHeroes Guild Bot • Your nickname = Your IGN' })

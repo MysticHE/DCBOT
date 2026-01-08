@@ -397,6 +397,11 @@ const commands = [
         description: 'Configure language channel permissions (Admin only)',
         default_member_permissions: PermissionFlagsBits.Administrator.toString()
     },
+    {
+        name: 'adminhelp',
+        description: 'Show admin commands for R4 and Guild Master',
+        default_member_permissions: PermissionFlagsBits.ManageMessages.toString()
+    },
 ];
 
 // ============================================
@@ -719,6 +724,7 @@ client.on('interactionCreate', async (interaction) => {
             case 'translationguide': await handleTranslationGuide(interaction); break;
             case 'setlanguage': await handleSetLanguage(interaction, options.getString('language')); break;
             case 'setup-language-channels': await handleSetupLanguageChannels(interaction); break;
+            case 'adminhelp': await handleAdminHelp(interaction); break;
         }
     } catch (error) {
         console.error('Command error:', error);
@@ -1601,6 +1607,9 @@ async function handleSetupLanguageChannels(interaction) {
     try {
         const results = [];
 
+        // Find Member role to deny access on language channels
+        const memberRole = guild.roles.cache.find(r => r.name === 'Member');
+
         // Configure each language channel
         for (const lang of BRIDGE_CHANNELS.languages) {
             const langRoleConfig = LANGUAGE_ROLES[lang.code];
@@ -1627,10 +1636,17 @@ async function handleSetupLanguageChannels(interaction) {
                 continue;
             }
 
-            // Set permissions: deny @everyone, allow language role
+            // Set permissions: deny @everyone and Member role, allow language role
             await channel.permissionOverwrites.edit(guild.roles.everyone, {
                 ViewChannel: false
             });
+
+            // Deny Member role to prevent broad access
+            if (memberRole) {
+                await channel.permissionOverwrites.edit(memberRole, {
+                    ViewChannel: false
+                });
+            }
 
             await channel.permissionOverwrites.edit(langRole, {
                 ViewChannel: true,
@@ -1673,6 +1689,60 @@ async function handleSetupLanguageChannels(interaction) {
         console.error('Setup language channels error:', error);
         await interaction.editReply({ content: `❌ Error: ${error.message}` });
     }
+}
+
+async function handleAdminHelp(interaction) {
+    const member = await interaction.guild.members.fetch(interaction.user.id);
+    const isGuildMaster = member.roles.cache.some(r => r.name === 'Guild Master');
+    const isR4 = member.roles.cache.some(r => r.name === 'R4');
+
+    const r4Embed = new EmbedBuilder()
+        .setColor('#2ecc71')
+        .setTitle('🛡️ R4 Commands')
+        .setDescription('Commands available to R4 officers:')
+        .addFields(
+            { name: '👥 Member Management', value:
+                '`/applications` - View and review pending applications\n' +
+                '`/setign @member <ign>` - Set member\'s IGN and nickname\n' +
+                '`/inactive [days]` - List inactive members (default: 14 days)\n' +
+                '`/kick @member [reason]` - Remove a member from the guild'
+            },
+            { name: '🎁 Code Management', value:
+                '`/addcode <code> <description> [expiry]` - Add new game code\n' +
+                '`/editcode <code> [description] [status]` - Edit existing code\n' +
+                '`/removecode <code>` - Remove a game code'
+            }
+        );
+
+    const gmEmbed = new EmbedBuilder()
+        .setColor('#FFD700')
+        .setTitle('👑 Guild Master Commands')
+        .setDescription('Additional commands for Guild Masters:')
+        .addFields(
+            { name: '⚙️ Server Setup', value:
+                '`/setup` - Create all roles (guild ranks + language roles)\n' +
+                '`/setup-language-channels` - Configure language channel permissions\n' +
+                '`/welcome` - Post the welcome message with Apply button'
+            },
+            { name: '👥 Advanced Management', value:
+                '`/setrank @member <rank>` - Change member rank (Member/R4/Guild Master)\n' +
+                '`/translationguide` - Post the translation guide'
+            },
+            { name: '🌐 Language Roles', value:
+                'Manually assign `Lang-*` roles to existing members:\n' +
+                '• Lang-English (general-chat only)\n' +
+                '• Lang-Vietnamese, Lang-Korean, Lang-Japanese\n' +
+                '• Lang-Chinese, Lang-Thai, Lang-Russian\n' +
+                '• Lang-Ukrainian, Lang-Indonesian'
+            }
+        );
+
+    const embeds = [r4Embed];
+    if (isGuildMaster) {
+        embeds.push(gmEmbed);
+    }
+
+    await interaction.reply({ embeds: embeds, ephemeral: true });
 }
 
 // ============================================

@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits, Collection, REST, Routes, EmbedBuilder, PermissionFlagsBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle, StringSelectMenuBuilder, ChannelType, Partials } = require('discord.js');
+const { Client, GatewayIntentBits, REST, Routes, EmbedBuilder, PermissionFlagsBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle, StringSelectMenuBuilder, ChannelType, Partials } = require('discord.js');
 const cron = require('node-cron');
 const fs = require('fs');
 const path = require('path');
@@ -95,9 +95,6 @@ function saveDatabase(data) {
 }
 
 let db = loadDatabase();
-
-// Collections for commands
-client.commands = new Collection();
 
 // ============================================
 // LANGUAGE CONFIGURATION - ALL COMMON LANGUAGES
@@ -921,88 +918,6 @@ async function postTranslationGuide(channel) {
 async function handleTranslationGuide(interaction) {
     await postTranslationGuide(interaction.channel);
     await interaction.reply({ content: '✅ Translation guide posted!', ephemeral: true });
-}
-
-// Post member commands guide (for #help channel)
-async function postMemberCommandsGuide(channel) {
-    const embed1 = new EmbedBuilder()
-        .setColor('#00ff00')
-        .setTitle('📚 Member Commands Guide')
-        .setDescription('Welcome to TopHeroes Guild! Here are all the commands you can use as a member.')
-        .setTimestamp();
-
-    const embed2 = new EmbedBuilder()
-        .setColor('#FFD700')
-        .setTitle('🎮 Game Commands')
-        .addFields(
-            { name: '`/codes`', value: 'View all active game codes for Top Heroes', inline: false },
-            { name: '`/allcodes`', value: 'View ALL known codes (active + expired) for reference', inline: false },
-            { name: '`/redeem`', value: 'Step-by-step guide on how to redeem codes in-game', inline: false },
-            { name: '`/gameinfo`', value: 'View Top Heroes game info, links, and resources', inline: false }
-        );
-
-    const embed3 = new EmbedBuilder()
-        .setColor('#0099ff')
-        .setTitle('🌐 Translation Commands')
-        .addFields(
-            { name: '🤖 Auto-Translation', value: 'All non-English messages are automatically translated to English!', inline: false },
-            { name: '`/translate <text> <language>`', value: 'Manually translate text to any of 30+ languages', inline: false },
-            { name: '`/languages`', value: 'View all supported languages and their flag emojis', inline: false },
-            { name: '🚩 Flag Reactions', value: 'React to any message with a flag emoji to translate it to that language!\n\nExample: React with 🇻🇳 to translate to Vietnamese', inline: false }
-        );
-
-    const embed4 = new EmbedBuilder()
-        .setColor('#00ff00')
-        .setTitle('📝 Other Commands')
-        .addFields(
-            { name: '`/help`', value: 'Show the quick command help menu', inline: false }
-        )
-        .setFooter({ text: 'TopHeroes Guild Bot • Need help? Ask in #💬general-chat!' });
-
-    await channel.send({ embeds: [embed1, embed2, embed3, embed4] });
-}
-
-// Post admin commands guide (for #admin-chat channel)
-async function postAdminCommandsGuide(channel) {
-    const embed1 = new EmbedBuilder()
-        .setColor('#FF0000')
-        .setTitle('🛡️ Admin Commands Guide')
-        .setDescription('Administrative commands for R4 and Guild Masters.')
-        .setTimestamp();
-
-    const embed2 = new EmbedBuilder()
-        .setColor('#0099ff')
-        .setTitle('👥 Member Management')
-        .addFields(
-            { name: '`/applications`', value: 'View all pending guild applications with Approve/Reject buttons', inline: false },
-            { name: '`/setign @member <ign>`', value: 'Set a member\'s In-Game Name and update their server nickname', inline: false },
-            { name: '`/setrank @member <rank>`', value: 'Set a member\'s guild rank (Member, R4, Guild Master)', inline: false },
-            { name: '`/inactive [days]`', value: 'List members inactive for X days (default: 14 days)', inline: false },
-            { name: '`/kick @member [reason]`', value: 'Remove a member from the guild and server', inline: false }
-        );
-
-    const embed3 = new EmbedBuilder()
-        .setColor('#00ff00')
-        .setTitle('📝 Content Management')
-        .addFields(
-            { name: '`/addcode <code> <description> [expiry]`', value: 'Add a new game code (posts to #🎁game-codes with @everyone ping)', inline: false }
-        );
-
-    const embed4 = new EmbedBuilder()
-        .setColor('#C0C0C0')
-        .setTitle('📊 Rank Hierarchy')
-        .setDescription('```\nGuild Master  → Full admin access\nR4            → Officer rank\nMember        → Regular member\n```')
-        .addFields(
-            { name: '💡 Workflow Tips', value:
-                '• New applicants get **Applicant** role until approved\n' +
-                '• Approved members start as **Member**\n' +
-                '• Use `/setrank` to promote members\n' +
-                '• Check `/inactive 30` weekly to find inactive members'
-            }
-        )
-        .setFooter({ text: 'TopHeroes Guild Bot • Admin Commands Reference' });
-
-    await channel.send({ embeds: [embed1, embed2, embed3, embed4] });
 }
 
 // Interactive welcome message with Apply button

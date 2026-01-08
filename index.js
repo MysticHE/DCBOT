@@ -492,19 +492,25 @@ client.on('messageCreate', async (message) => {
 
     // Translation bridge: General ↔ All language channels
     if (message.guild && message.content && message.content.length >= 3) {
-        const channelName = message.channel.name.toLowerCase();
+        // Normalize channel name: lowercase and strip emojis/special chars
+        const normalizeChannelName = (name) => name.toLowerCase().replace(/[^\w-]/g, '');
+        const channelNameNorm = normalizeChannelName(message.channel.name);
 
         // Check if message is from English general chat
         const isEnglishChannel = BRIDGE_CHANNELS.english.some(name =>
-            channelName.includes(name.toLowerCase().replace(/[^\w-]/g, ''))
+            channelNameNorm === normalizeChannelName(name) || channelNameNorm.endsWith(normalizeChannelName(name))
         );
 
         // Check if message is from any language channel
         const sourceLang = BRIDGE_CHANNELS.languages.find(lang =>
-            lang.names.some(name => channelName.includes(name.toLowerCase().replace(/[^\w-]/g, '')))
+            lang.names.some(name => {
+                const norm = normalizeChannelName(name);
+                return channelNameNorm === norm || channelNameNorm.endsWith(norm);
+            })
         );
 
-        if (isEnglishChannel || sourceLang) {
+        // Only process if it's one or the other, not both
+        if ((isEnglishChannel && !sourceLang) || (!isEnglishChannel && sourceLang)) {
             const bridgeTextOnly = message.content
                 .replace(/<@!?\d+>/g, '')
                 .replace(/<#\d+>/g, '')
@@ -519,21 +525,27 @@ client.on('messageCreate', async (message) => {
                 if (isEnglishChannel) {
                     // English → ALL language channels
                     for (const lang of BRIDGE_CHANNELS.languages) {
-                        const targetChannel = message.guild.channels.cache.find(ch =>
-                            lang.names.some(name => ch.name.toLowerCase().includes(name.toLowerCase().replace(/[^\w-]/g, '')))
-                        );
-                        if (targetChannel) {
+                        const targetChannel = message.guild.channels.cache.find(ch => {
+                            const chNorm = normalizeChannelName(ch.name);
+                            return lang.names.some(name => {
+                                const norm = normalizeChannelName(name);
+                                return chNorm === norm || chNorm.endsWith(norm);
+                            });
+                        });
+                        if (targetChannel && targetChannel.id !== message.channel.id) {
                             sendTranslationBridge(message, targetChannel, lang.code, lang.label, lang.color);
                         }
                     }
                 } else if (sourceLang) {
                     // Language channel → English only
-                    const enChannel = message.guild.channels.cache.find(ch =>
-                        BRIDGE_CHANNELS.english.some(name =>
-                            ch.name.toLowerCase().includes(name.toLowerCase().replace(/[^\w-]/g, ''))
-                        ) && ch.parent?.name?.toUpperCase().includes('COMMUNITY')
-                    );
-                    if (enChannel) {
+                    const enChannel = message.guild.channels.cache.find(ch => {
+                        const chNorm = normalizeChannelName(ch.name);
+                        return BRIDGE_CHANNELS.english.some(name => {
+                            const norm = normalizeChannelName(name);
+                            return chNorm === norm || chNorm.endsWith(norm);
+                        }) && ch.parent?.name?.toUpperCase().includes('COMMUNITY');
+                    });
+                    if (enChannel && enChannel.id !== message.channel.id) {
                         sendTranslationBridge(message, enChannel, 'en', 'English 🇺🇸', 0x3C3B6E);
                     }
                 }

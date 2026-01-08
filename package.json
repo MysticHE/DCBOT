@@ -1,0 +1,20 @@
+{
+  "name": "topheroes-bot",
+  "version": "1.0.0",
+  "description": "Discord bot for TopHeroes Guild - featuring translations, IGN management, recruitment, and more",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "@iamtraction/google-translate": "^2.0.1",
+    "rss-parser": "^3.13.0",
+    "node-cron": "^3.0.3",
+    "dotenv": "^16.4.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

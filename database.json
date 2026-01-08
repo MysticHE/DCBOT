@@ -1,0 +1,299 @@
+{
+  "members": {
+    "604274245622824970": {
+      "discordId": "604274245622824970",
+      "discordName": "mrmystic99",
+      "ign": "MysticHE",
+      "joinDate": "2026-01-06T02:10:18.776Z",
+      "lastActive": "2026-01-07T10:00:47.956Z",
+      "role": "R4",
+      "notes": ""
+    },
+    "376090732257345536": {
+      "discordId": "376090732257345536",
+      "discordName": "hellsbellees",
+      "ign": "B🥂",
+      "castleLevel": "Unknown",
+      "joinDate": "2026-01-06T07:41:31.705Z",
+      "lastActive": "2026-01-07T09:56:06.098Z",
+      "role": "R5",
+      "notes": ""
+    },
+    "563644012540461068": {
+      "discordId": "563644012540461068",
+      "discordName": "stylzy_",
+      "ign": "Stylzy",
+      "castleLevel": "Unknown",
+      "joinDate": "2026-01-07T03:35:55.315Z",
+      "lastActive": "2026-01-07T07:06:54.959Z",
+      "role": "Member",
+      "notes": ""
+    },
+    "217051947482611713": {
+      "discordId": "217051947482611713",
+      "discordName": "beyondsoldier9",
+      "ign": "Soldier09",
+      "castleLevel": "Unknown",
+      "joinDate": "2026-01-07T07:09:13.068Z",
+      "lastActive": "2026-01-07T07:39:50.540Z",
+      "role": "Member",
+      "notes": ""
+    },
+    "910900623841558590": {
+      "discordId": "910900623841558590",
+      "discordName": "masont3589",
+      "ign": "Michael",
+      "castleLevel": "Unknown",
+      "joinDate": "2026-01-07T09:52:57.177Z",
+      "lastActive": "2026-01-07T10:05:47.729Z",
+      "role": "Member",
+      "notes": ""
+    }
+  },
+  "applications": [
+    {
+      "id": 1767685277378,
+      "discordId": "376090732257345536",
+      "discordName": "hellsbellees",
+      "ign": "B🥂",
+      "experience": "Over a year",
+      "status": "approved",
+      "appliedAt": "2026-01-06T07:41:17.378Z",
+      "reviewedBy": "mrmystic99",
+      "reviewedAt": "2026-01-06T07:41:31.705Z"
+    },
+    {
+      "id": 1767756843581,
+      "discordId": "563644012540461068",
+      "discordName": "stylzy_",
+      "ign": "Stylzy",
+      "experience": "Just started",
+      "status": "approved",
+      "appliedAt": "2026-01-07T03:34:03.581Z",
+      "reviewedBy": "hellsbellees",
+      "reviewedAt": "2026-01-07T03:35:55.315Z"
+    },
+    {
+      "id": 1767769728382,
+      "discordId": "217051947482611713",
+      "discordName": "beyondsoldier9",
+      "ign": "Soldier09",
+      "experience": "1 week",
+      "status": "approved",
+      "appliedAt": "2026-01-07T07:08:48.382Z",
+      "reviewedBy": "hellsbellees",
+      "reviewedAt": "2026-01-07T07:09:13.068Z"
+    },
+    {
+      "id": 1767779546196,
+      "discordId": "910900623841558590",
+      "discordName": "masont3589",
+      "ign": "Michael",
+      "experience": "không biết",
+      "status": "approved",
+      "appliedAt": "2026-01-07T09:52:26.196Z",
+      "reviewedBy": "hellsbellees",
+      "reviewedAt": "2026-01-07T09:52:57.177Z"
+    }
+  ],
+  "gameCodes": [
+    {
+      "code": "THMerrYXmaS",
+      "description": "Holiday rewards",
+      "status": "active",
+      "addedBy": "system",
+      "addedAt": "2026-01-06T00:00:00.000Z"
+    },
+    {
+      "code": "ReinDeERTH",
+      "description": "Holiday rewards",
+      "status": "active",
+      "addedBy": "system",
+      "addedAt": "2026-01-06T00:00:00.000Z"
+    },
+    {
+      "code": "CAndyCAneTH",
+      "description": "Free rewards",
+      "status": "active",
+      "addedBy": "system",
+      "addedAt": "2026-01-06T00:00:00.000Z"
+    },
+    {
+      "code": "2025TOPHEROES",
+      "description": "New Year rewards",
+      "status": "active",
+      "addedBy": "system",
+      "addedAt": "2026-01-06T00:00:00.000Z"
+    },
+    {
+      "code": "TopHeroes2025",
+      "description": "New Year rewards",
+      "status": "active",
+      "addedBy": "system",
+      "addedAt": "2026-01-06T00:00:00.000Z"
+    },
+    {
+      "code": "CoolfortheSummer",
+      "description": "Free rewards",
+      "status": "active",
+      "addedBy": "system",
+      "addedAt": "2026-01-06T00:00:00.000Z"
+    },
+    {
+      "code": "Im1of200k",
+      "description": "Milestone rewards",
+      "status": "active",
+      "addedBy": "system",
+      "addedAt": "2026-01-06T00:00:00.000Z"
+    },
+    {
+      "code": "THJP2025",
+      "description": "Japan server rewards",
+      "status": "active",
+      "addedBy": "system",
+      "addedAt": "2026-01-06T00:00:00.000Z"
+    },
+    {
+      "code": "THKR2025",
+      "description": "Korea server rewards",
+      "status": "active",
+      "addedBy": "system",
+      "addedAt": "2026-01-06T00:00:00.000Z"
+    },
+    {
+      "code": "TH777",
+      "description": "3 Recruit Vouchers + 300 Diamonds",
+      "status": "active",
+      "addedBy": "system",
+      "addedAt": "2026-01-06T00:00:00.000Z"
+    },
+    {
+      "code": "Im1of100k",
+      "description": "5 Recruit Vouchers + 5 Meat Chests + 5 Speed-ups",
+      "status": "active",
+      "addedBy": "system",
+      "addedAt": "2026-01-06T00:00:00.000Z"
+    },
+    {
+      "code": "2024TOPHEROES",
+      "description": "2024 rewards",
+      "status": "expired",
+      "addedBy": "system",
+      "addedAt": "2026-01-06T00:00:00.000Z"
+    },
+    {
+      "code": "CakeTime",
+      "description": "Event rewards",
+      "status": "expired",
+      "addedBy": "system",
+      "addedAt": "2026-01-06T00:00:00.000Z"
+    },
+    {
+      "code": "ONEYEARTH",
+      "description": "Anniversary rewards",
+      "status": "expired",
+      "addedBy": "system",
+      "addedAt": "2026-01-06T00:00:00.000Z"
+    },
+    {
+      "code": "WATERFIGHT",
+      "description": "Summer event",
+      "status": "expired",
+      "addedBy": "system",
+      "addedAt": "2026-01-06T00:00:00.000Z"
+    },
+    {
+      "code": "Abracadabra",
+      "description": "Magic rewards",
+      "status": "expired",
+      "addedBy": "system",
+      "addedAt": "2026-01-06T00:00:00.000Z"
+    },
+    {
+      "code": "SummerinTH",
+      "description": "Summer rewards",
+      "status": "expired",
+      "addedBy": "system",
+      "addedAt": "2026-01-06T00:00:00.000Z"
+    },
+    {
+      "code": "EXPLORER",
+      "description": "Explorer rewards",
+      "status": "expired",
+      "addedBy": "system",
+      "addedAt": "2026-01-06T00:00:00.000Z"
+    },
+    {
+      "code": "CherryBlossom",
+      "description": "Spring rewards",
+      "status": "expired",
+      "addedBy": "system",
+      "addedAt": "2026-01-06T00:00:00.000Z"
+    },
+    {
+      "code": "NewAdventure",
+      "description": "Adventure rewards",
+      "status": "expired",
+      "addedBy": "system",
+      "addedAt": "2026-01-06T00:00:00.000Z"
+    },
+    {
+      "code": "MistletoeTH",
+      "description": "Winter rewards",
+      "status": "expired",
+      "addedBy": "system",
+      "addedAt": "2026-01-06T00:00:00.000Z"
+    }
+  ],
+  "activity": {
+    "604274245622824970": {
+      "lastMessage": "2026-01-07T10:00:47.956Z",
+      "messageCount": 31
+    },
+    "376090732257345536": {
+      "lastMessage": "2026-01-07T09:56:06.098Z",
+      "messageCount": 58
+    },
+    "563644012540461068": {
+      "lastMessage": "2026-01-07T07:06:54.959Z",
+      "messageCount": 13
+    },
+    "217051947482611713": {
+      "lastMessage": "2026-01-07T07:39:50.540Z",
+      "messageCount": 24
+    },
+    "910900623841558590": {
+      "lastMessage": "2026-01-07T10:05:47.729Z",
+      "messageCount": 7
+    }
+  },
+  "tips": {
+    "event": [
+      "📅 Always check event timers - most events reset at server midnight!",
+      "📅 Save stamina potions for double-reward event days!",
+      "📅 Guild events give better rewards - coordinate with guildmates!",
+      "📅 Limited-time events often have exclusive heroes - prioritize them!",
+      "📅 Event shops usually have better value than regular purchases!"
+    ],
+    "item": [
+      "🎒 Focus on upgrading legendary gear over epic - better long-term value!",
+      "🎒 Save your universal hero shards for S-tier heroes only!",
+      "🎒 Don't waste gold on common item upgrades - save for legendaries!",
+      "🎒 Artifact sets provide huge bonuses - complete sets before mixing!",
+      "🎒 Weekly shop resets have the best gem-to-value ratios!"
+    ],
+    "beginner": [
+      "🌟 Complete your daily quests every day for maximum rewards!",
+      "🌟 Focus on S-tier heroes: Ne Zha, Pyromancer, Astrologer!",
+      "🌟 Castle level limits hero level - upgrade your castle first!",
+      "🌟 Adjudicator is the best tank - prioritize getting him!",
+      "🌟 Complete the tutorial fully before free roaming to avoid bugs!",
+      "🌟 Check gift codes in Settings > Gift Code in-game!",
+      "🌟 Most codes require Castle level 10+ to redeem!",
+      "🌟 Join guild activities for bonus experience and items!",
+      "🌟 Save Diamonds for hero summons during special events!",
+      "🌟 Scarecrow. He pops the blue ring in the first 2 seconds in the fight. Run for 4 seconds. Attack for about 10 seconds and run again when the blue ring pops up. Repeat."
+    ]
+  },
+  "lastCodeCheck": "2026-01-07T22:00:00.766Z"
+}

@@ -40,9 +40,7 @@ const GAME_INFO = {
 // ============================================
 // JSON DATABASE HELPER
 // ============================================
-const DB_PATH = process.env.NODE_ENV === 'production'
-    ? '/data/database.json'
-    : path.join(__dirname, 'database.json');
+const DB_PATH = path.join(__dirname, 'database.json');
 
 function loadDatabase() {
     try {

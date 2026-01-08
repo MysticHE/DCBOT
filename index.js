@@ -1393,12 +1393,6 @@ async function handleHelp(interaction) {
         .setTitle('📚 TopHeroes Bot Commands')
         .setDescription(`**Game:** ${GAME_INFO.name}`)
         .addFields(
-            { name: '📝 Getting Started', value:
-                '**New here?** Click **Apply to Join** in #welcome\n' +
-                '• Fill out IGN + Experience\n' +
-                '• Select your preferred language\n' +
-                '• Get access to #general-chat + your language channel!'
-            },
             { name: '🌐 Language & Translation', value:
                 '`/setlanguage` - Change your language channel\n' +
                 '`/translate <text> <lang>` - Translate text manually\n' +

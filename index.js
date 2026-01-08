@@ -211,6 +211,12 @@ const languageChoices = [
     { name: '🇷🇴 Romanian', value: 'ro' }
 ];
 
+// Translation bridge channel names
+const BRIDGE_CHANNELS = {
+    english: ['💬general-chat', 'general-chat', 'general'],
+    vietnamese: ['🇻🇳tiếng-việt', 'tiếng-việt', 'vietnamese-chat']
+};
+
 // ============================================
 // SLASH COMMANDS DEFINITION
 // ============================================
@@ -391,6 +397,28 @@ async function translateText(text, targetLang) {
     }
 }
 
+// Translation bridge: sends translated message to target channel
+async function sendTranslationBridge(message, targetChannel, targetLang, langLabel) {
+    try {
+        const translated = await translateText(message.content, targetLang);
+        if (!translated || translated.toLowerCase() === message.content.toLowerCase()) return;
+
+        const embed = new EmbedBuilder()
+            .setAuthor({
+                name: message.author.displayName || message.author.username,
+                iconURL: message.author.displayAvatarURL({ dynamic: true })
+            })
+            .setDescription(`**Original:**\n${message.content.slice(0, 500)}\n\n**${langLabel}:**\n${translated.slice(0, 500)}`)
+            .setColor(targetLang === 'vi' ? 0xDA251D : 0x3C3B6E)
+            .setFooter({ text: `From #${message.channel.name}` })
+            .setTimestamp();
+
+        await targetChannel.send({ embeds: [embed] });
+    } catch (error) {
+        console.error('Translation bridge error:', error.message);
+    }
+}
+
 // ============================================
 // MESSAGE REACTION FOR TRANSLATION
 // ============================================
@@ -454,6 +482,48 @@ client.on('messageCreate', async (message) => {
     }
 
     saveDatabase(db);
+
+    // Translation bridge: General ↔ Vietnamese channel sync
+    if (message.guild && message.content && message.content.length >= 3) {
+        const channelName = message.channel.name.toLowerCase();
+
+        const isEnglishChannel = BRIDGE_CHANNELS.english.some(name =>
+            channelName.includes(name.toLowerCase().replace(/[^\w-]/g, ''))
+        );
+        const isVietnameseChannel = BRIDGE_CHANNELS.vietnamese.some(name =>
+            channelName.includes(name.toLowerCase().replace(/[^\w-]/g, ''))
+        );
+
+        if (isEnglishChannel || isVietnameseChannel) {
+            const bridgeTextOnly = message.content
+                .replace(/<@!?\d+>/g, '')
+                .replace(/<#\d+>/g, '')
+                .replace(/<@&\d+>/g, '')
+                .replace(/https?:\/\/\S+/g, '')
+                .replace(/:\w+:/g, '')
+                .replace(/[\u{1F300}-\u{1F9FF}]/gu, '')
+                .replace(/[\u{2600}-\u{27BF}]/gu, '')
+                .trim();
+
+            if (bridgeTextOnly.length >= 3) {
+                if (isEnglishChannel) {
+                    const vnChannel = message.guild.channels.cache.find(ch =>
+                        BRIDGE_CHANNELS.vietnamese.some(name =>
+                            ch.name.toLowerCase().includes(name.toLowerCase().replace(/[^\w-]/g, ''))
+                        )
+                    );
+                    if (vnChannel) sendTranslationBridge(message, vnChannel, 'vi', 'Tiếng Việt 🇻🇳');
+                } else if (isVietnameseChannel) {
+                    const enChannel = message.guild.channels.cache.find(ch =>
+                        BRIDGE_CHANNELS.english.some(name =>
+                            ch.name.toLowerCase().includes(name.toLowerCase().replace(/[^\w-]/g, ''))
+                        ) && ch.parent?.name?.toUpperCase().includes('COMMUNITY')
+                    );
+                    if (enChannel) sendTranslationBridge(message, enChannel, 'en', 'English 🇺🇸');
+                }
+            }
+        }
+    }
 
     // Auto-translate non-English messages to English
     if (!message.content || message.content.length < 3) return;

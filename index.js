@@ -239,6 +239,27 @@ const LANGUAGE_ROLES = {
     'id': { name: 'Lang-Indonesian', color: '#FF0000', channelNames: ['indonesian-chat'] }
 };
 
+// Guide channels for DM translations (react with flag → DM instead of reply)
+const GUIDE_CHANNELS = [
+    // 💡 TIPS & TRICKS
+    'tips-and-tricks',
+    'game-codes',
+    'item-guides',
+    'hero-information',
+    'queue-comps-and-gear',
+    'resource-management',
+    'pvp-vs-pve',
+    'terms-and-glossary',
+    'when-youre-stuck',
+    // 📅 Event Guides
+    'guild-race',
+    'guild-arms-race',
+    'kvk',
+    'ancient-battlefield',
+    'glory-battlefield',
+    'frostfield-battle'
+];
+
 // ============================================
 // SLASH COMMANDS DEFINITION
 // ============================================
@@ -496,21 +517,54 @@ client.on('messageReactionAdd', async (reaction, user) => {
         const originalMessage = reaction.message;
         if (!originalMessage.content) return;
 
+        // Check if this is a guide channel (DM translations)
+        const channelName = originalMessage.channel.name?.toLowerCase() || '';
+        const isGuideChannel = GUIDE_CHANNELS.some(guide =>
+            channelName.includes(guide.toLowerCase())
+        );
+
         try {
             const translated = await translateText(originalMessage.content, targetLang);
 
             if (translated) {
-                const embed = new EmbedBuilder()
-                    .setColor('#0099ff')
-                    .setAuthor({
-                        name: originalMessage.author?.username || 'Unknown',
-                        iconURL: originalMessage.author?.displayAvatarURL()
-                    })
-                    .setDescription(`**Original:**\n${originalMessage.content}\n\n**${languageNames[targetLang]}:**\n${translated}`)
-                    .setFooter({ text: `Translated to ${languageNames[targetLang]}` })
-                    .setTimestamp();
+                if (isGuideChannel) {
+                    // Guide channel: Send DM to user
+                    const messageLink = `https://discord.com/channels/${originalMessage.guild?.id}/${originalMessage.channel.id}/${originalMessage.id}`;
 
-                await originalMessage.reply({ embeds: [embed] });
+                    const embed = new EmbedBuilder()
+                        .setColor('#0099ff')
+                        .setAuthor({
+                            name: originalMessage.author?.username || 'Unknown',
+                            iconURL: originalMessage.author?.displayAvatarURL()
+                        })
+                        .setDescription(`**Original:**\n${originalMessage.content}\n\n**${languageNames[targetLang]}:**\n${translated}`)
+                        .addFields({
+                            name: '📍 Source',
+                            value: `[#${originalMessage.channel.name}](${messageLink})`,
+                            inline: true
+                        })
+                        .setFooter({ text: `Translated to ${languageNames[targetLang]}` })
+                        .setTimestamp();
+
+                    try {
+                        await user.send({ embeds: [embed] });
+                    } catch (dmError) {
+                        console.log(`Could not DM translation to ${user.tag}: DMs disabled`);
+                    }
+                } else {
+                    // Other channels: Reply in channel (existing behavior)
+                    const embed = new EmbedBuilder()
+                        .setColor('#0099ff')
+                        .setAuthor({
+                            name: originalMessage.author?.username || 'Unknown',
+                            iconURL: originalMessage.author?.displayAvatarURL()
+                        })
+                        .setDescription(`**Original:**\n${originalMessage.content}\n\n**${languageNames[targetLang]}:**\n${translated}`)
+                        .setFooter({ text: `Translated to ${languageNames[targetLang]}` })
+                        .setTimestamp();
+
+                    await originalMessage.reply({ embeds: [embed] });
+                }
             }
         } catch (error) {
             console.error('Translation reaction error:', error);

@@ -254,7 +254,8 @@ const GUIDE_CHANNELS = [
     'kvk',
     'ancient-battlefield',
     'glory-battlefield',
-    'frostfield-battle'
+    'frostfield-battle',
+    'dark-invasion'
 ];
 
 // ============================================
